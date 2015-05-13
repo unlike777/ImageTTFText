@@ -16,7 +16,7 @@ class ImageTTFText
 
 	public function __construct($imagePath)
 	{
-		$imagePath = ROOT_DIR.$imagePath;
+		$imagePath = self::root().$imagePath;
 		
 		if (!is_file($imagePath) || !list(,,$type) = @getimagesize($imagePath)) return false;
 
@@ -29,6 +29,11 @@ class ImageTTFText
 		}
 	}
 
+	//вернет путь к корню сайта
+	private static function root() {
+		return getcwd();
+	}
+	
 	public function __destruct()
 	{
 		if ($this->hImage) imagedestroy($this->hImage);
@@ -40,7 +45,7 @@ class ImageTTFText
 	 */
 	public function setFont($font, $size = 14, $color = false, $alpha = false)
 	{
-		if (!is_file($font) && !is_file($font = ROOT_DIR.$this->ttfFontDir.'/'.$font))
+		if (!is_file($font) && !is_file($font = self::root().$this->ttfFontDir.'/'.$font))
 			return false;
 
 		$this->ttfFont     = $font;
@@ -138,7 +143,7 @@ class ImageTTFText
 	 */
 	public function output ($target, $replace = true)
 	{
-		$target = ROOT_DIR.$target;
+		$target = self::root().$target;
 		
 		if (is_file ($target) && !$replace) return false;
 
