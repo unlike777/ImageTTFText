@@ -26,6 +26,6 @@ $img->set(array(
 	
 $img->text(10, 50, 'Надпись');
 
-$img->save('/output.jpg');
+$img->save('output.jpg');
 $img->render('output');
 ```
