@@ -172,7 +172,18 @@ class ImageTTFText
 	 */
 	
 	public function save($target, $replace = true) {
-		$target = self::root().$target;
+		
+		$target = trim($target);
+		
+		if (empty($target)) {
+			return false;
+		}
+		
+		if (substr($target, 0, 1) == '/') {
+			$target = substr($target, 1);
+		}
+		
+		$target = self::root().'/'.$target;
 		
 		if (file_exists($target) && !$replace) return false;
 		

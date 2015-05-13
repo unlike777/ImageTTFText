@@ -5,7 +5,7 @@ PHP Класс для нанесения текста на изображени�
 ##Example
 
 ```php
-$img = new ImageTTFText('/test.jpg');
+$img = new ImageTTFText('test.jpg');
 
 $img->font('times')
 	->size(25)
