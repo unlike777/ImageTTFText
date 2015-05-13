@@ -6,17 +6,50 @@ class ImageTTFText
 	private $fontDir   = '/css_js/fonts';  		// Каталог шрифтов
 	private $src = false;						// Исходное изображение
 	
+	//текущие настройки для нанесения текста
+	private $props = array(
+		'font' => 'georgia_bi',				// Файл шрифта
+		'fontK' => 1,						// Коэффициент для размера шрифта
+		'size' => 14,						// Размер шрифта
+		'color' => '#000000',				// Цвет
+		'align' => 'left',					// Выравнивание
+		'leading' => false,					// Интерлиньяж в пикселях
+		'def_leading' => 1.6,				// Интерлиньяж по умолчанию от размера шрифта
+	);
 	
-	private $font = 'georgia_bi';				// Файл шрифта
-	private $font_k = 1;						// Коэффициент для размера шрифта
-	private $size = 14;							// Размер шрифта
-	private $color = '#000000';					// Цвет
-	private $align = 'left';					// Выравнивание
-	private $leading = false;					// Интерлиньяж в пикселях
-	private $def_leading = 1.6;					// Интерлиньяж по умолчанию от размера шрифта
-	
+	//вернет путь до корня сайта
 	private static function root() {
 		return getcwd();
+	}
+	
+	public function __isset($name) {
+		return isset($this->props) ? true : false;
+	}
+	
+	public function __get($name) {
+		
+		if (isset($this->props[$name])) {
+			return $this->props[$name];
+		}
+		
+		return NULL;
+	}
+	
+	public function __set($name, $value) {
+		if (isset($this->props[$name])) {
+			
+			if ($name == 'align') {
+				$arr = array('center', 'left', 'right');
+				if (in_array($value, $arr)) {
+					$this->props[$name] = $value;
+				}
+			} else if ($name == 'color') {
+				$this->color($value);
+			} else {
+				$this->props[$name] = $value;
+			}
+			
+		}
 	}
 	
 	public function __construct($path) {
@@ -39,42 +72,34 @@ class ImageTTFText
 		if ($this->src) imagedestroy($this->src);
 	}
 	
-	public function size($size) {
-//		if (is_int($size)) {
-		$this->size = $size;
-//		}
-		
-		return $this;
-	}
-	
-	public function align($align) {
-		$arr = array('center', 'left', 'right');
-		
-		$this->align = 'left';
-		
-		if (in_array($align, $arr)) {
-			$this->align = $align;
+	/**
+	 * Массовое присваивание параметров через массив
+	 * @param array $arr
+	 * @return $this
+	 */
+	public function set(array $arr) {
+		if (is_array($arr)) {
+			foreach ($arr as $key => $val) {
+				if (isset($this->props[$key])) {
+					$this->{$key} = $val;
+				}
+			}
 		}
 		
 		return $this;
 	}
 	
+	public function size($val) 		{ $this->{__FUNCTION__} = $val; return $this; }
+	public function align($val) 	{ $this->{__FUNCTION__} = $val; return $this; }
+	public function fontK($val) 	{ $this->{__FUNCTION__} = $val; return $this; }
+	public function leading($val) 	{ $this->{__FUNCTION__} = $val; return $this; }
+
 	public function font($name) {
 		$this->font = false;
 		if (file_exists(self::root().$this->fontDir.'/'.$name.'.ttf')) {
 			$this->font = $name.'.ttf';
 		}
 		
-		return $this;
-	}
-	
-	/**
-	 * Устанавливает коэффициент для размера шрифта
-	 * @param $k
-	 * @return $this
-	 */
-	public function fontK($k) {
-		$this->font_k = $k;
 		return $this;
 	}
 	
@@ -99,17 +124,6 @@ class ImageTTFText
 			
 		}
 		
-		return $this;
-	}
-	
-	
-	/**
-	 * Устанавливает интерлиньяж, если false то будет рассчитывать от текущего размера шрифта
-	 * @param $leading
-	 * @return $this
-	 */
-	public function leading($leading) {
-		$this->leading = $leading;
 		return $this;
 	}
 	
