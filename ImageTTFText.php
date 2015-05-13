@@ -164,7 +164,7 @@ class ImageTTFText
 					$x - $shift,
 					$y + $font_size,
 					$this->color,
-					self::root().$this->fontDir.'/'.$this->font,
+					$this->fontPath(),
 					$item
 				);
 				
