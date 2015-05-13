@@ -22,6 +22,11 @@ class ImageTTFText
 		return getcwd();
 	}
 	
+	//вернет путь до файла шрифта
+	private function fontPath() {
+		return self::root().$this->fontDir.'/'.$this->font;
+	}
+	
 	public function __isset($name) {
 		return isset($this->props) ? true : false;
 	}
@@ -136,18 +141,18 @@ class ImageTTFText
 			$text = str_replace(array('<br>', '<br/>', '<br />'), "\n", $text);
 			
 			$data = explode("\n", $text);
-			$font_size = $this->size*$this->font_k;
+			$font_size = $this->size*$this->fontK;
 			
 			foreach ($data as $item) {
 				
 				$shift = 0;
 				
 				if ($this->align == 'center') {
-					$sizes = imagettfbbox($font_size, $angle, self::root().$this->fontDir.'/'.$this->font, $item);
+					$sizes = imagettfbbox($font_size, $angle, $this->fontPath(), $item);
 					$width = $sizes[2] - $sizes[0];
 					$shift = $width/2;
 				} else if ($this->align == 'right'){
-					$sizes = imagettfbbox($font_size, $angle, self::root().$this->fontDir.'/'.$this->font, $item);
+					$sizes = imagettfbbox($font_size, $angle, $this->fontPath(), $item);
 					$width = $sizes[2] - $sizes[0];
 					$shift = $width;
 				}
