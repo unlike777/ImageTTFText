@@ -15,6 +15,7 @@ class ImageTTFText
 		'align' => 'left',					// Выравнивание
 		'leading' => false,					// Интерлиньяж в пикселях
 		'def_leading' => 1.6,				// Интерлиньяж по умолчанию от размера шрифта
+		'box' => 0							// Ширина бокса, в который нужно разместить текст
 	);
 	
 	//вернет путь до корня сайта
@@ -57,17 +58,28 @@ class ImageTTFText
 		}
 	}
 	
-	public function __construct($path) {
-		$path = self::root().$path;
+	public function __construct($target) {
 		
-		if (file_exists($path)) {
-			$type = exif_imagetype($path);
+		$target = trim($target);
+		
+		if (empty($target)) {
+			return false;
+		}
+		
+		if (substr($target, 0, 1) == '/') {
+			$target = substr($target, 1);
+		}
+		
+		$target = self::root().'/'.$target;
+		
+		if (file_exists($target)) {
+			$type = exif_imagetype($target);
 			
 			switch ($type)
 			{
-				case IMAGETYPE_GIF:   $this->src = @imagecreatefromgif($path);   break;
-				case IMAGETYPE_JPEG:  $this->src = @imagecreatefromjpeg($path);  break;
-				case IMAGETYPE_PNG:   $this->src = @imagecreatefrompng($path);   break;
+				case IMAGETYPE_GIF:   $this->src = @imagecreatefromgif($target);   break;
+				case IMAGETYPE_JPEG:  $this->src = @imagecreatefromjpeg($target);  break;
+				case IMAGETYPE_PNG:   $this->src = @imagecreatefrompng($target);   break;
 			}
 		}
 		
@@ -143,7 +155,11 @@ class ImageTTFText
 			$data = explode("\n", $text);
 			$font_size = $this->size*$this->fontK;
 			
+			//пробегаем по строкам
 			foreach ($data as $item) {
+				
+				//$tmp = explode(' ', $item);
+				
 				
 				$shift = 0;
 				
