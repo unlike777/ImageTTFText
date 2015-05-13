@@ -9,7 +9,7 @@ class ImageTTFText
 	private $font_k = 1;						// Коэффициент для размера шрифта
 	private $size = 14;							// Размер шрифта
 	private $color = '#000000';					// Цвет
-	private $style = 'left';					// Стиль
+	private $align = 'left';					// Выравнивание
 	private $leading = false;					// Интерлиньяж
 	private $def_leading = 1.6;					// Интерлиньяж по умолчанию от размера шрифта
 	
@@ -37,7 +37,7 @@ class ImageTTFText
 		if ($this->src) imagedestroy($this->src);
 	}
 	
-	public function setSize($size) {
+	public function size($size) {
 //		if (is_int($size)) {
 		$this->size = $size;
 //		}
@@ -45,19 +45,19 @@ class ImageTTFText
 		return $this;
 	}
 	
-	public function setStyle($style) {
+	public function align($align) {
 		$arr = array('center', 'left', 'right');
 		
-		$this->style = 'left';
+		$this->align = 'left';
 		
-		if (in_array($style, $arr)) {
-			$this->style = $style;
+		if (in_array($align, $arr)) {
+			$this->align = $align;
 		}
 		
 		return $this;
 	}
 	
-	public function setFont($name) {
+	public function font($name) {
 		$this->font = false;
 		if (file_exists(self::root().$this->fontDir.'/'.$name.'.ttf')) {
 			$this->font = $name.'.ttf';
@@ -71,7 +71,7 @@ class ImageTTFText
 	 * @param $k
 	 * @return $this
 	 */
-	public function setFontK($k) {
+	public function fontK($k) {
 		$this->font_k = $k;
 		return $this;
 	}
@@ -80,7 +80,7 @@ class ImageTTFText
 	 * @param $color
 	 * @param int $alpha - от 0 до 127
 	 */
-	public function setColor($color, $alpha = 0) {
+	public function color($color, $alpha = 0) {
 		if ($alpha < 0) $alpha = 0;
 		if ($alpha > 127) $alpha = 127;
 		
@@ -106,7 +106,7 @@ class ImageTTFText
 	 * @param $leading
 	 * @return $this
 	 */
-	public function setLeading($leading) {
+	public function leading($leading) {
 		$this->leading = $leading;
 		return $this;
 	}
@@ -126,11 +126,11 @@ class ImageTTFText
 				
 				$shift = 0;
 				
-				if ($this->style == 'center') {
+				if ($this->align == 'center') {
 					$sizes = imagettfbbox($font_size, $angle, self::root().$this->fontDir.'/'.$this->font, $item);
 					$width = $sizes[2] - $sizes[0];
 					$shift = $width/2;
-				} else if ($this->style == 'right'){
+				} else if ($this->align == 'right'){
 					$sizes = imagettfbbox($font_size, $angle, self::root().$this->fontDir.'/'.$this->font, $item);
 					$width = $sizes[2] - $sizes[0];
 					$shift = $width;
