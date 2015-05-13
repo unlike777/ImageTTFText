@@ -5,12 +5,14 @@ class ImageTTFText
 	private $quality = 85;  					// Качество jpg по-умолчанияю
 	private $fontDir   = '/css_js/fonts';  		// Каталог шрифтов
 	private $src = false;						// Исходное изображение
+	
+	
 	private $font = 'georgia_bi';				// Файл шрифта
 	private $font_k = 1;						// Коэффициент для размера шрифта
 	private $size = 14;							// Размер шрифта
 	private $color = '#000000';					// Цвет
 	private $align = 'left';					// Выравнивание
-	private $leading = false;					// Интерлиньяж
+	private $leading = false;					// Интерлиньяж в пикселях
 	private $def_leading = 1.6;					// Интерлиньяж по умолчанию от размера шрифта
 	
 	private static function root() {
