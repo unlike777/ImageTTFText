@@ -2,171 +2,209 @@
 
 class ImageTTFText
 {
-	// Качество jpg по-умолчанияю
-	public   $jpegQuality = 100;
-
-	// Каталог шрифтов
-	public   $ttfFontDir   = '/css_js/fonts';
-
-	private $ttfFont    = false;
-	private $ttfFontSize  = false;
-
-	private $hImage      = false;
-	private $hColor      = false;
-
-	public function __construct($imagePath)
-	{
-		$imagePath = self::root().$imagePath;
-		
-		if (!is_file($imagePath) || !list(,,$type) = @getimagesize($imagePath)) return false;
-
-		switch ($type)
-		{
-			case 1:  $this->hImage = @imagecreatefromgif($imagePath);  break;
-			case 2:  $this->hImage = @imagecreatefromjpeg($imagePath);  break;
-			case 3:  $this->hImage = @imagecreatefrompng($imagePath);  break;
-			default: $this->hImage = false;
-		}
-	}
-
-	//вернет путь к корню сайта
+	private $quality = 85;  					// Качество jpg по-умолчанияю
+	private $fontDir   = '/css_js/fonts';  		// Каталог шрифтов
+	private $src = false;						// Исходное изображение
+	private $font = 'georgia_bi';				// Файл шрифта
+	private $font_k = 1;						// Коэффициент для размера шрифта
+	private $size = 14;							// Размер шрифта
+	private $color = '#000000';					// Цвет
+	private $style = 'left';					// Стиль
+	private $leading = false;					// Интерлиньяж
+	private $def_leading = 1.6;					// Интерлиньяж по умолчанию от размера шрифта
+	
 	private static function root() {
 		return getcwd();
 	}
 	
-	public function __destruct()
-	{
-		if ($this->hImage) imagedestroy($this->hImage);
-	}
-
-	/**
-	 * Устанавливает шрифт
-	 *
-	 */
-	public function setFont($font, $size = 14, $color = false, $alpha = false)
-	{
-		if (!is_file($font) && !is_file($font = self::root().$this->ttfFontDir.'/'.$font))
-			return false;
-
-		$this->ttfFont     = $font;
-		$this->ttfFontSize   = $size;
-
-		if ($color) $this->setColor($color, $alpha);
-	}
-
-	/**
-	 * Пишет текст
-	 *
-	 */
-	public function writeText ($x, $y, $text, $angle = 0)
-	{
-		if (!$this->ttfFont || !$this->hImage || !$this->hColor) return false;
-
-		imagettftext(
-			$this->hImage,
-			$this->ttfFontSize, 
-			$angle, 
-			$x, 
-			$y + $this->ttfFontSize,
-			$this->hColor, 
-			$this->ttfFont, 
-			$text
-		);
-	}
-
-	/**
-	 * Форматирует текст (согласно текущему установленному шрифту),
-	 * что бы он не вылезал за рамки ($bWidth, $bHeight)
-	 * Убирает слишком длинные слова
-	 */
-	public function textFormat($bWidth, $bHeight, $text)
-	{
-		// Если в строке есть длинные слова, разбиваем их на более короткие
-		// Разбиваем текст по строкам
-
-		$strings   = explode("\n",
-			preg_replace('!([^\s]{24})[^\s]!su', '\\1 ',
-				str_replace(array("\r", "\t"),array("\n", ' '), $text)));
-
-		$textOut   = array(0 => '');
-		$i = 0;
-
-		foreach ($strings as $str)
-		{
-			// Уничтожаем совокупности пробелов, разбиваем по словам
-			$words = array_filter(explode(' ', $str));
-
-			foreach ($words as $word)
+	public function __construct($path) {
+		$path = self::root().$path;
+		
+		if (file_exists($path)) {
+			$type = exif_imagetype($path);
+			
+			switch ($type)
 			{
-				// Какие параметры у текста в строке?
-				$sizes = imagettfbbox($this->ttfFontSize, 0, $this->ttfFont, $textOut[$i].$word.' ');
-
-				// Если размер линии превышает заданный, принудительно 
-				// перескакиваем на следующую строку
-				// Иначе пишем на этой же строке
-				if ($sizes[2] > $bWidth) {
-					$textOut[++$i] = $word.' ';
-				} else {
-					$textOut[$i] .= $word.' ';
-				}
-
-				// Если вышли за границы текста по вертикали, то заканчиваем
-				if ($i*$this->ttfFontSize >= $bHeight) break(2);
+				case IMAGETYPE_GIF:   $this->src = @imagecreatefromgif($path);   break;
+				case IMAGETYPE_JPEG:  $this->src = @imagecreatefromjpeg($path);  break;
+				case IMAGETYPE_PNG:   $this->src = @imagecreatefrompng($path);   break;
 			}
-
-			// "Естественный" переход на новую строку 
-			$textOut[++$i] = ''; 
-			if ($i*$this->ttfFontSize >= $bHeight) break;
 		}
-
-		return implode ("\n", $textOut);
+		
 	}
-
-	/**
-	 * Устанваливет цвет вида #34dc12
-	 *
-	 */
-	public function setColor($color, $alpha = false)
-	{
-		if (!$this->hImage) return false;
-
-		list($r, $g, $b) = array_map('hexdec', str_split(ltrim($color, '#'), 2));
-
-		return $alpha === false ?
-			$this->hColor = imagecolorallocate($this->hImage, $r+1, $g+1, $b+1) :
-			$this->hColor = imagecolorallocatealpha($this->hImage, $r+1, $g+1, $b+1, $alpha);
+	
+	public function __destruct() {
+		if ($this->src) imagedestroy($this->src);
 	}
-
+	
+	public function setSize($size) {
+//		if (is_int($size)) {
+		$this->size = $size;
+//		}
+		
+		return $this;
+	}
+	
+	public function setStyle($style) {
+		$arr = array('center', 'left', 'right');
+		
+		$this->style = 'left';
+		
+		if (in_array($style, $arr)) {
+			$this->style = $style;
+		}
+		
+		return $this;
+	}
+	
+	public function setFont($name) {
+		$this->font = false;
+		if (file_exists(self::root().$this->fontDir.'/'.$name.'.ttf')) {
+			$this->font = $name.'.ttf';
+		}
+		
+		return $this;
+	}
+	
 	/**
-	 * Выводит картинку в файл. Тип вывода определяется из расширения.
-	 *
+	 * Устанавливает коэффициент для размера шрифта
+	 * @param $k
+	 * @return $this
 	 */
-	public function output ($target, $replace = true)
-	{
+	public function setFontK($k) {
+		$this->font_k = $k;
+		return $this;
+	}
+	
+	/**
+	 * @param $color
+	 * @param int $alpha - от 0 до 127
+	 */
+	public function setColor($color, $alpha = 0) {
+		if ($alpha < 0) $alpha = 0;
+		if ($alpha > 127) $alpha = 127;
+		
+		$this->color = false;
+		
+		if ($this->src) {
+			list($r, $g, $b) = array_map('hexdec', str_split(ltrim($color, '#'), 2));
+			
+			if ($alpha > 0) {
+				$this->color = imagecolorallocatealpha($this->src, $r+1, $g+1, $b+1, $alpha);
+			} else {
+				$this->color = imagecolorallocate($this->src, $r+1, $g+1, $b+1);
+			}
+			
+		}
+		
+		return $this;
+	}
+	
+	
+	/**
+	 * Устанавливает интерлиньяж, если false то будет рассчитывать от текущего размера шрифта
+	 * @param $leading
+	 * @return $this
+	 */
+	public function setLeading($leading) {
+		$this->leading = $leading;
+		return $this;
+	}
+	
+	
+	public function text($x, $y, $text, $angle = 0) {
+		
+		if ($this->font && $this->src && $this->color) {
+			
+			$text = htmlspecialchars_decode($text);
+			$text = str_replace(array('<br>', '<br/>', '<br />'), "\n", $text);
+			
+			$data = explode("\n", $text);
+			$font_size = $this->size*$this->font_k;
+			
+			foreach ($data as $item) {
+				
+				$shift = 0;
+				
+				if ($this->style == 'center') {
+					$sizes = imagettfbbox($font_size, $angle, self::root().$this->fontDir.'/'.$this->font, $item);
+					$width = $sizes[2] - $sizes[0];
+					$shift = $width/2;
+				} else if ($this->style == 'right'){
+					$sizes = imagettfbbox($font_size, $angle, self::root().$this->fontDir.'/'.$this->font, $item);
+					$width = $sizes[2] - $sizes[0];
+					$shift = $width;
+				}
+				
+				imagettftext(
+					$this->src,
+					$font_size,
+					$angle,
+					$x - $shift,
+					$y + $font_size,
+					$this->color,
+					self::root().$this->fontDir.'/'.$this->font,
+					$item
+				);
+				
+				if ($this->leading) {
+					$y += $this->leading;
+				} else {
+					$y += $font_size*$this->def_leading;
+				}
+				
+				
+			}
+			
+		}
+		
+		return $this;
+	}
+	
+	
+	/**
+	 * Сохраняет изображение в файл
+	 * @param $target
+	 * @param bool $replace
+	 * @return bool
+	 */
+	
+	public function save($target, $replace = true) {
 		$target = self::root().$target;
 		
-		if (is_file ($target) && !$replace) return false;
-
-		$ext = strtolower(substr($target, strrpos($target, ".") + 1));
-
+		if (file_exists($target) && !$replace) return false;
+		
+		$path_info = pathinfo($target);
+		$ext = strtolower($path_info['extension']);
+		
 		switch ($ext)
 		{
 			case "gif":
-				imagegif ($this->hImage, $target);
+				imagegif ($this->src, $target);
 				break;
-
+			
 			case "jpg" :
 			case "jpeg":
-				imagejpeg($this->hImage, $target, $this->jpegQuality);
+				imagejpeg($this->src, $target, $this->quality);
 				break;
-
+			
 			case "png":
-				imagepng($this->hImage, $target);
+				imagepng($this->src, $target);
 				break;
-
+			
 			default: return false;
 		}
 		return true;
+	}
+	
+	
+	public function render($filename) {
+		header('Content-Type: image/png');
+		header('Content-Disposition: attachment; filename=' . $filename.'.png');
+		
+		imagepng($this->src);
+		
+		imagedestroy($this->src);
 	}
 }
 
