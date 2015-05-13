@@ -51,6 +51,10 @@ class ImageTTFText
 				}
 			} else if ($name == 'color') {
 				$this->color($value);
+			} else if ($name == 'font') {
+				if (file_exists(self::root().$this->fontDir.'/'.$value.'.ttf')) {
+					$this->props[$name] = $value.'.ttf';
+				}
 			} else {
 				$this->props[$name] = $value;
 			}
@@ -110,15 +114,8 @@ class ImageTTFText
 	public function align($val) 	{ $this->{__FUNCTION__} = $val; return $this; }
 	public function fontK($val) 	{ $this->{__FUNCTION__} = $val; return $this; }
 	public function leading($val) 	{ $this->{__FUNCTION__} = $val; return $this; }
-
-	public function font($name) {
-		$this->font = false;
-		if (file_exists(self::root().$this->fontDir.'/'.$name.'.ttf')) {
-			$this->font = $name.'.ttf';
-		}
-		
-		return $this;
-	}
+	public function font($val) 		{ $this->{__FUNCTION__} = $val; return $this; }
+	public function box($val) 		{ $this->{__FUNCTION__} = $val; return $this; }
 	
 	/**
 	 * @param $color
@@ -146,30 +143,53 @@ class ImageTTFText
 	
 	
 	public function text($x, $y, $text, $angle = 0) {
-		
 		if ($this->font && $this->src && $this->color) {
 			
 			$text = htmlspecialchars_decode($text);
 			$text = str_replace(array('<br>', '<br/>', '<br />'), "\n", $text);
 			
-			$data = explode("\n", $text);
+			$data = $data_tmp = explode("\n", $text);
 			$font_size = $this->size*$this->fontK;
+			
+			//проверка на выход строки за пределы бокса
+			if (!empty($this->box)) {
+				$data = array();
+				
+				//пробегаем по строкам
+				foreach ($data_tmp as $line) {
+					$words = explode(' ', $line);
+					$width = 0;
+					$str = '';
+					
+					//пробегаем по словам
+					foreach ($words as $key => $word) {
+						
+						if ($width > $this->box) {
+							$width = 0;
+							$data[] = trim($str);
+							$str = '';
+						}
+						
+						$sizes = imagettfbbox($font_size, $angle, $this->fontPath(), $word);
+						$width += ($sizes[2] - $sizes[0]);
+						$str .= $word.' ';
+					}
+					
+					$data[] = trim($str);
+				}
+			}
 			
 			//пробегаем по строкам
 			foreach ($data as $item) {
 				
-				//$tmp = explode(' ', $item);
-				
-				
 				$shift = 0;
 				
+				$sizes = imagettfbbox($font_size, $angle, $this->fontPath(), $item);
+				$width = $sizes[2] - $sizes[0];
+				
 				if ($this->align == 'center') {
-					$sizes = imagettfbbox($font_size, $angle, $this->fontPath(), $item);
-					$width = $sizes[2] - $sizes[0];
 					$shift = $width/2;
 				} else if ($this->align == 'right'){
-					$sizes = imagettfbbox($font_size, $angle, $this->fontPath(), $item);
-					$width = $sizes[2] - $sizes[0];
 					$shift = $width;
 				}
 				

@@ -10,6 +10,7 @@ $img = new ImageTTFText('test.jpg');
 $img->font('times')
 	->size(25)
 	->align('right')
+	->box(200)
 	->color('#313141');
 	
 ###OR
@@ -22,6 +23,7 @@ $img->set(array(
     'align' => 'right',					// Выравнивание
     'leading' => false,					// Интерлиньяж в пикселях
     'def_leading' => 1.6,				// Интерлиньяж по умолчанию от размера шрифта
+    'box' => 200,						// Ширина бокса, в который нужно разместить текст
 ));
 	
 $img->text(10, 50, 'Надпись');
