@@ -20,7 +20,7 @@ class ImageTTFText
 	
 	//вернет путь до корня сайта
 	private static function root() {
-		return getcwd();
+		return ROOT_DIR;
 	}
 	
 	//вернет путь до файла шрифта
